@@ -3,7 +3,6 @@
 constDev.json
 
 # OS Files
-package-lock.json
 node_modules
 
 # Database
