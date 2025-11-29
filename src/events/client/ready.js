@@ -48,10 +48,18 @@ module.exports = {
       return console.error("ready.js - Le serveur n'est pas disponible !");
 
     // Check if the bot is synchronized with the server
-    const userConnect = await initApp();
-    console.log(`1/6 : ${userConnect} is correctly connect to the app !`);
-    console.log(`2/6 : Start initialize mails...`);
-    await initCheckMail(guild);
+    // Mail subsystem retired by default: keep code but don't execute it.
+    // To re-enable mail checks set environment variable `MAILS_ENABLED=true`.
+    if (process.env.MAILS_ENABLED === "true") {
+      const userConnect = await initApp();
+      console.log(`1/6 : ${userConnect} is correctly connect to the app !`);
+      console.log(`2/6 : Start initialize mails...`);
+      await initCheckMail(guild);
+      // Launch setInterval (js function) for mail checking
+      setInterval(() => checkNewMail(guild), 12000); // Check every 12 seconds
+    } else {
+      console.log("Mail checks are retired/disabled (MAILS_ENABLED !== 'true'). Skipping mail init and periodic checks.");
+    }
     console.log("3/6 : Start check birthdays...");
     await checkBirthdays(guild);
     console.log("4/6 : Start check user timeout...");
@@ -70,8 +78,8 @@ module.exports = {
       "Europe/Paris"
     ); // Check 5 time a day
 
-    // Launch setInterval (js function)
-    setInterval(() => checkNewMail(guild), 12000); // Check every 12 seconds
+    // NOTE: `checkNewMail` interval moved into conditional above and only runs
+    // when `MAILS_ENABLED=true` to keep the mail code present but inactive by default.
 
     // Set the client user's activity
     await client.user.setPresence({
